@@ -37,7 +37,7 @@ architecture FIFO_v1 of FIFO is
  
     signal r_add   : std_logic_vector(ADD_WIDTH - 1 downto 0);  -- Read Address
     signal w_add   : std_logic_vector(ADD_WIDTH - 1 downto 0);  -- Write Address
---	signal d_add   : std_logic_vector(ADD_WIDTH - 1 downto 0);  -- Diff Address
+	signal d_add   : std_logic_vector(ADD_WIDTH - 1 downto 0);  -- Diff Address
  
     signal ren_int : std_logic;  		-- internal read enable
     signal wen_int : std_logic;  		-- internal write enable
@@ -81,41 +81,68 @@ begin  -- FIFO_v1
 				r_dout => Data_out
 				reset => Reset
 				);
-
+-------------------------------------------------------------------------------
+-- DUANLV - CONSIDERATION
+-------------------------------------------------------------------------------
+-- Sync_data: process(clk,reset)
+-- 	begin -- process Sync_data
+-- 		if reset ='0' then
+-- 			data_in_del <= (others =>'0');
+ 
+-- 		elsif clk'event and clk = '1'  then
+-- 			data_in_del <= data_in;
+ 
+-- -- else statemnet was removed due to error (hdl 
+-- -- 
+-- 		end if;
+ 
+ 
+-- 	end process Sync_data;
+-------------------------------------------------------------------------------
 	wen_int <= '1' when (WE = '1' and ( Full = '0')) else '0';
 	ren_int <= '1' when (RE = '1' and ( Empty = '0')) else '0';
- 
+-------------------------------------------------------------------------------
 	Wadd_cnt:
 		process(W_Clk) 
-			variable q1 : std_logic_vector(ADD_WIDTH - 1 downto 0);  -- Counter state
+			-- variable q1 : std_logic_vector(ADD_WIDTH - 1 downto 0);  -- Counter state
 		begin  -- process Wadd_cnt
 		   -- activities triggered by asynchronous reset (active low)
-			if W_Clk'event and W_Clk = '1'  then
+		    if reset = '0' then
+		    	w_add <= (others => '0');
+		    	r_add <= (others => '0');
+		    	d_add <= (others => '0');
+			elsif W_Clk'event and W_Clk = '1'  then
 				if WE = '1' and ( Full = '0') then
-					q1 := q1 + 1;
-				 else
-					q1 := q1;
+			   		w_add <= w_add + 1;
+					d_add <= d_add +1;
+				 --else
+					-- q1 := q1;
 				end if;
 			end if;
-			w_add  <= q1;
+			-- w_add  <= q1;
 	   end process Wadd_cnt;
 	   
 	Radd_cnt:
 		process(R_clk)
-			variable q2 : std_logic_vector(ADD_WIDTH - 1 downto 0);  -- Counter state
+			-- variable q2 : std_logic_vector(ADD_WIDTH - 1 downto 0);  -- Counter state
 		begin
-			if R_clk'event and R_clk = '1'  then
-	 
-			if RE = '1' and ( Empty = '0') then
-				q2 := q2 + 1;
-			 else
-				q2 := q2;
+			if reset = '0' then
+		    	w_add <= (others => '0');
+		    	r_add <= (others => '0');
+		    	d_add <= (others => '0');
+			elsif R_clk'event and R_clk = '1'  then
+				if RE = '1' and ( Empty = '0') then
+ 		   			w_add <= w_add + 1;
+					d_add <= d_add - 1;
+				 --else
+					-- q2 := q2;
+				end if;
 			end if;
-			R_add  <= q2;
+			-- R_add  <= q2;
 		end process Radd_cnt;
 
-	FULL	<=  '1'when (D_ADD(ADD_WIDTH - 1 downto 0) = MAX_ADDR) else '0';
-	Empty   <=  '1'when (D_ADD(ADD_WIDTH - 1 downto 0) =  MIN_ADDR) else '0';
+	Full	<=  '1'when (d_add(ADD_WIDTH - 1 downto 0) = MAX_ADDR) else '0';
+	Empty   <=  '1'when (d_add(ADD_WIDTH - 1 downto 0) =  MIN_ADDR) else '0';
 	
 end FIFO_v1;
  

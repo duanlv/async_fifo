@@ -36,19 +36,13 @@ architecture dpmem_rtl_v1 of dpmem is
 		end loop;
 	end init_mem;
 begin
-	-- Reset.
---	process(reset)	  
---	begin
---		if reset='0' then
---			init_mem (data);
---		end if;
---	end process;
-	
 	-- Writing port.
 	process(w_clk)	  
 	begin
-		--if(w_clk'event and w_clk='1') then
-		if(rising_edge(clk)) then
+		if (reset = '0') then
+		      -- data_out <= (OTHERS => '1');
+		      init_mem ( data);
+		elsif (rising_edge(clk)) then
 			if(w_wr='1') then
 				mem(conv_integer(w_addr)) <= w_din;
 			end if;
@@ -58,9 +52,12 @@ begin
 	-- Reading port.
 	process(r_clk)
 	begin
+		if (reset = '0') then
+		  init_mem ( data);
+		  r_dout <= (OTHERS => '1');    -- Default value
 		--if(r_clk'event and r_clk='1') then
-		if(rising_edge(clk)) then
-			if(r_re='1') then
+		elsif (rising_edge(clk)) then
+			if (r_re='1') then
 				r_dout <= mem(conv_integer(r_addr));
 			else
 				r_dout <= (OTHERS => '1');    -- Default value
@@ -68,25 +65,3 @@ begin
 		end if;
 	end process;
 end dpmem_rtl_v1;
-
--- architecture dpmem_rtl_v2 of dpmem is
--- 
--- begin
--- --	    --Addreses (Gray counters) logic:
--- --    GrayCounter_pWr : GrayCounter
--- --    port map (
--- --        GrayCount_out => pNextWordToWrite,
--- --        Enable_in     => NextWriteAddressEn,
--- --        Clear_in      => Clear_in,
--- --        clk           => WClk
--- --    );
--- --       
--- --    GrayCounter_pRd : GrayCounter
--- --    port map (
--- --        GrayCount_out => pNextWordToRead,
--- --        Enable_in     => NextReadAddressEn,
--- --        Clear_in      => Clear_in,
--- --        clk           => RClk
--- --    );
--- --
--- end dpmem_rtl_v2;
