@@ -4,8 +4,8 @@ use ieee.std_logic_unsigned.all;
 
 entity dpmem2clk is
   generic (
-    DATA_WIDTH        :     integer   := 8;  		-- Word Width
-    ADDR_WIDTH        :     integer   := 4  		-- Address width
+    DATA_WIDTH        :     integer   := 256;  		-- Word Width
+    ADDR_WIDTH        :     integer   := 8  		-- Address width
     );
 
   port (
@@ -46,7 +46,7 @@ begin  -- dpmem_arch
   begin  -- process ReProc
     if Reset = '0' then
         Dataout                       <= (others => IDELOUTPUT); 
-        init_mem (data);
+        -- init_mem (data);
     elsif Rclk'event and Rclk = '1' then   -- rising clock edge
       if Ren = '1' then
         Dataout                       <= data(conv_integer(Radd)); 
