@@ -43,7 +43,7 @@ architecture rtl of ASYNC_FIFO is
         );
         port(
             Clk            : in STD_LOGIC;
-            Enable      : in  std_logic;
+            Enable         : in  std_logic;
             Clear          : in STD_LOGIC;
             Dout           : out STD_LOGIC_VECTOR(COUNTER_WIDTH - 1 downto 0)
         );
@@ -83,7 +83,15 @@ begin
         Dataout => l_data_out,
         Reset   => Reset_in
     );
-    Data_out <= l_data_out;
+    
+    process(RClk_in)
+    begin
+        if RClk_in'event and RClk_in = '1' then
+            if ReadEn_in = '1' then
+                Data_out <= l_data_out;
+            end if;
+        end if;
+    end process;
 
     -- Enable
     NextWriteAddressEn <= WriteEn_in and (not full);
@@ -129,7 +137,7 @@ begin
             end if;
         end if;
     end process EmptyProc;
-    
+
     -- Bypass
     BypassProc : process (Data_in, WriteEn_in, ReadEn_in, Empty)
     begin
